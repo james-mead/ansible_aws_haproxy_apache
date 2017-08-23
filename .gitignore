@@ -8,4 +8,3 @@ tmp/*
 !tmp/.keep
 *.pyc
 *.retry
-inventories/group_vars/*/secret/*
