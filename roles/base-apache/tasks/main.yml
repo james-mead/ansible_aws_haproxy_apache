@@ -1,0 +1,11 @@
+---
+# This role installs Apache
+
+- name: Install Apache
+  sudo: yes
+  apt: name={{ item }} state=latest
+  with_items:
+   - apache2
+
+- name: Apache service state
+  service: name=apache2 state=started enabled=yes
