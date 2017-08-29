@@ -12,8 +12,8 @@
   tasks:
   - name: Create Load Balancer Security Group
     ec2_group:
-      name: development_load_balancers
-      description: "Load Balancer Security Group - development"
+      name: "{{ ec2_environment }}_load_balancers"
+      description: "Load Balancer Security Group - {{ ec2_environment }}"
       region: "{{ ec2_region }}"
       access_key: "{{ ec2_access_key }}"
       secret_key: "{{ ec2_secret_key }}"
@@ -39,7 +39,7 @@
      access_key: "{{ ec2_access_key }}"
      secret_key: "{{ ec2_secret_key }}"
      keypair: "{{ ec2_keypair }}"
-     group: ['default', 'development_load_balancers']
+     group: ['default', '{{ ec2_environment }}_load_balancers']
      type: "{{ ec2_instance_type }}"
      image: "{{ ec2_image }}"
      region: "{{ ec2_region }}"
@@ -50,8 +50,8 @@
 
   - name: Create Web Server Security Group
     ec2_group:
-      name: development_web_servers
-      description: "Web Servers Security Group - development"
+      name: "{{ ec2_environment }}_web_servers"
+      description: "Web Servers Security Group - {{ ec2_environment }}"
       region: "{{ ec2_region }}"
       access_key: "{{ ec2_access_key }}"
       secret_key: "{{ ec2_secret_key }}"
@@ -59,7 +59,7 @@
         - proto: tcp
           from_port: 80
           to_port: 80
-          group_name: development_load_balancers
+          group_name: "{{ ec2_environment }}_load_balancers"
         - proto: tcp
           from_port: 22
           to_port: 22
@@ -67,7 +67,7 @@
         - proto: tcp
           from_port: 443
           to_port: 443
-          group_name: development_load_balancers
+          group_name: "{{ ec2_environment }}_load_balancers"
       rules_egress:
         - proto: all
           cidr_ip: 0.0.0.0/0
@@ -77,7 +77,7 @@
      access_key: "{{ ec2_access_key }}"
      secret_key: "{{ ec2_secret_key }}"
      keypair: "{{ ec2_keypair }}"
-     group: ['default', 'development_web_servers']
+     group: ['default', '{{ ec2_environment }}_web_servers']
      type: "{{ ec2_instance_type }}"
      image: "{{ ec2_image }}"
      region: "{{ ec2_region }}"
@@ -100,4 +100,12 @@
       state: started
     with_items: "{{ ec2.instances }}"
 
-          
+  - name: Install python
+    hosts: xenials 
+    # This is very important as otherwise a setup task will be executed
+    # to gather the server facts and this will fail as there is no Python2 yet
+    gather_facts: false
+    become: true 
+    tasks: 
+      - name: install python 2
+        raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
