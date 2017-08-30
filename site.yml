@@ -2,22 +2,25 @@
 ## This playbook deploys the whole application stack in this site.  
 
 # Apply common configuration to all hosts
-# - hosts: all
+- hosts: all
+  remote_user: ubuntu
+  become: true
+  become_method: sudo
   
-#   roles:
-#   - common
+  roles:
+  - common
 
 # Configure and deploy the web servers. Note that we include two roles here,
 # the 'base-apache' role which simply sets up Apache, and 'web' which includes
 # our example web application.
-- hosts: tag_class_webserver
+# - hosts: tag_class_webserver
 
-  roles:
-  - base-apache
-  # - web
+#   roles:
+#   - base-apache
+#   # - web
   
-  tags:
-  - webserver
+#   tags:
+#   - webserver
 
 # Configure and deploy the load balancer(s).
 # - hosts: tag_class_loadbalancers
