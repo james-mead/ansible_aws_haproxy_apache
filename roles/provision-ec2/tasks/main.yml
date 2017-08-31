@@ -1,0 +1,103 @@
+---
+- name: Create Load Balancer Security Group
+  ec2_group:
+    name: "{{ ec2_environment }}_load_balancers"
+    description: "Load Balancer Security Group - {{ ec2_environment }}"
+    region: "{{ ec2_region }}"
+    access_key: "{{ ec2_access_key }}"
+    secret_key: "{{ ec2_secret_key }}"
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 0.0.0.0/0
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+
+- name: Create Web Server Security Group
+  ec2_group:
+    name: "{{ ec2_environment }}_web_servers"
+    description: "Web Servers Security Group - {{ ec2_environment }}"
+    region: "{{ ec2_region }}"
+    access_key: "{{ ec2_access_key }}"
+    secret_key: "{{ ec2_secret_key }}"
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        group_name: "{{ ec2_environment }}_load_balancers"
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        group_name: "{{ ec2_environment }}_load_balancers"
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+
+- name: Launch Load Balancing Instance(s)
+  ec2:
+    access_key: "{{ ec2_access_key }}"
+    secret_key: "{{ ec2_secret_key }}"
+    keypair: "{{ ec2_keypair }}"
+    group: ['default', '{{ ec2_environment }}_load_balancers']
+    type: "{{ ec2_instance_type }}"
+    image: "{{ ec2_image }}"
+    region: "{{ ec2_region }}"
+    instance_tags: "{'Name':'dev-loadbalancer', 'env':'{{ ec2_environment }}', 'class':'loadbalancer'}"
+    count: "1"
+    wait: true
+  register: ec2_loadbalancer
+
+- name: Launch Web Server Instance(s)
+  ec2:
+    access_key: "{{ ec2_access_key }}"
+    secret_key: "{{ ec2_secret_key }}"
+    keypair: "{{ ec2_keypair }}"
+    group: ['default', '{{ ec2_environment }}_web_servers']
+    type: "{{ ec2_instance_type }}"
+    image: "{{ ec2_image }}"
+    region: "{{ ec2_region }}"
+    instance_tags: "{'Name':'dev-webserver', 'env':'{{ ec2_environment }}', 'class':'webserver'}"
+    count: 2
+  register: ec2_webserver
+
+- name: Add Load Balancer Instance(s) to host group
+  add_host:
+    name: "{{ item.public_ip}}"
+    groups: launched
+  with_items: "{{ ec2_loadbalancer.instances }}"
+
+- name: Add Web Server Instance(s) to host group
+  add_host:
+    name: "{{ item.public_ip }}"
+    groups: launched
+  with_items: "{{ ec2_webserver.instances }}"
+ 
+- name: Wait for SSH to come up
+  wait_for: 
+    host: "{{ item }}"
+    port: "{{ ec2_ssh_port }}"
+    delay: 60 
+    timeout: 320 
+    state: started
+  with_items: "{{ groups['launched'] }}"
+
+# Ansible defaults to using Python2.7
+- name: Install Python 2.7 on Remote Host(s)
+  remote_user: ubuntu
+  raw: sudo apt-get update -y && sudo apt-get install -y python-simplejson
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['launched'] }}"
