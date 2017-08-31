@@ -6,7 +6,6 @@
   remote_user: ubuntu
   become: true
   become_method: sudo
-  
   roles:
   - common
 
@@ -14,7 +13,9 @@
 # the 'base-apache' role which simply sets up Apache, and 'web' which includes
 # our example web application.
 - hosts: security_group_development_web_servers
-
+  remote_user: ubuntu
+  become: true
+  become_method: sudo
   roles:
   - base-apache
 #   # - web
@@ -23,10 +24,12 @@
 #   - webserver
 
 # Configure and deploy the load balancer(s).
-# - hosts: tag_class_loadbalancers
-
-#   roles:
-#   - haproxy
+- hosts: security_group_development_load_balancers
+  pre_tasks:
+    - include_vars: inventories/development/group_vars/security_group_development_load_balancers
+  remote_user: ubuntu
+  become: true
+  become_method: sudo
+  roles:
+    - haproxy
   
-#   tags:
-#   - loadbalancers
