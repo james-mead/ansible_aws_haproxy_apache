@@ -1,0 +1,8 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  pre_tasks:
+    - Include_vars: inventories/development/group_vars/all
+  roles:
+    - provision-ec2
