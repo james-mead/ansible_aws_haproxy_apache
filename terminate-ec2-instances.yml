@@ -1,0 +1,47 @@
+---
+# Delete's AWS images
+# this post has way to get images. 
+# call with: ansible-playbook terminate-ec2.yml
+# requires that you have boto installed and a ~/.boto file installed.
+# the .boto file should have the following env variables: 
+# aws_access_key_id = ABCD...
+# aws_secret_access_key = ZYXWVUTSR..
+ 
+- hosts: ec2
+  gather_facts: True
+  connection: local
+  pre_tasks:
+    - include_vars: inventories/development/group_vars/all
+  tasks:
+    - name: Gather EC2 facts
+      local_action: ec2_facts
+
+    - name: Conditional
+      debug:
+        # var: hostvars[inventory_hostname]
+        msg: "Terminating instance: {{ hostvars[inventory_hostname]['ec2_id'] }}"
+      when: "hostvars[inventory_hostname].ec2_tag_env == ec2_environment"
+
+    - name: Terminate Instance(s) 
+      ec2:
+        state: "absent"
+        instance_ids: "{{ item }}"
+        region: "{{ ec2_region }}"
+        wait: True
+      with_items: "{{ hostvars[inventory_hostname].ec2_id}}"
+      when: "hostvars[inventory_hostname].ec2_tag_env == ec2_environment"
+
+- hosts: localhost
+  connection: local
+  pre_tasks:
+    - include_vars: inventories/development/group_vars/all
+  tasks:
+    - name: Gather EC2 Group Facts
+      local_action: ec2_facts
+      
+    - name: Remove Web Servers Security Group
+      ec2_group:
+        name: "{{ ec2_environment }}_web_servers"
+        description: "Web Servers Security Group - {{ ec2_environment }}"
+        region: "{{ ec2_region }}"
+        state: absent
