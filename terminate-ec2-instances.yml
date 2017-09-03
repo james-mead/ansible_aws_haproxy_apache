@@ -39,9 +39,16 @@
     - name: Gather EC2 Group Facts
       local_action: ec2_facts
       
-    - name: Remove Web Servers Security Group
+    - name: Remove Web Server Security Group
       ec2_group:
         name: "{{ ec2_environment }}_web_servers"
         description: "Web Servers Security Group - {{ ec2_environment }}"
+        region: "{{ ec2_region }}"
+        state: absent
+
+    - name: Remove Load Balancer Security Group
+      ec2_group:
+        name: "{{ ec2_environment }}_load_balancers"
+        description: "Load Balancer Security Group - {{ ec2_environment }}"
         region: "{{ ec2_region }}"
         state: absent
