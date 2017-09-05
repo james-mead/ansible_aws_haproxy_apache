@@ -35,6 +35,16 @@ frontend haproxy_inbound
 
 backend haproxy_httpd
     balance {{ balance }}
-{% for host in groups.security_group_development_web_servers %}
-    server {{ host }} {{ hostvars[host]['ansible_' + iface].ipv4.address }}:{{ httpd_port }} check
-{% endfor %}
+{% if env == 'development' %}
+    {% for host in groups.security_group_development_web_servers %}
+        server {{ host }} {{ hostvars[host]['ansible_' + iface].ipv4.address }}:{{ httpd_port }} check
+    {% endfor %}
+{% elif env == 'staging' %}
+    {% for host in groups.security_group_staging_web_servers %}
+        server {{ host }} {{ hostvars[host]['ansible_' + iface].ipv4.address }}:{{ httpd_port }} check
+    {% endfor %}
+{% elif env == 'production' %}
+    {% for host in groups.security_group_production_web_servers %}
+        server {{ host }} {{ hostvars[host]['ansible_' + iface].ipv4.address }}:{{ httpd_port }} check
+    {% endfor %}
+{% endif %}
