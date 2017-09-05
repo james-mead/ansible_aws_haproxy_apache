@@ -12,7 +12,7 @@
 # Configure and deploy the web servers. Note that we include two roles here,
 # the 'base-apache' role which simply sets up Apache, and 'web' which includes
 # our example web application.
-- hosts: security_group_development_web_servers
+- hosts: "security_group_{{ env }}_web_servers"
   remote_user: ubuntu
   become: true
   become_method: sudo
@@ -24,9 +24,9 @@
 #   - webserver
 
 # Configure and deploy the load balancer(s).
-- hosts: security_group_development_load_balancers
+- hosts: "security_group_{{ env }}_load_balancers"
   pre_tasks:
-    - include_vars: inventories/development/group_vars/security_group_development_load_balancers
+    - include_vars: "inventories/{{ env }}/group_vars/security_group_{{ env }}_load_balancers"
   remote_user: ubuntu
   become: true
   become_method: sudo
