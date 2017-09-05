@@ -56,7 +56,10 @@
     type: "{{ ec2_instance_type }}"
     image: "{{ ec2_image }}"
     region: "{{ ec2_region }}"
-    instance_tags: "{'Name':'dev-loadbalancer', 'env':'{{ ec2_environment }}', 'class':'loadbalancer'}"
+    instance_tags: 
+      Name: "{{ ( ec2_environment == 'development') | ternary('dev-loadbalancer', ec2_environment[0:4] + '-loadbalancer') }}"
+      env: "{{ ec2_environment }}"
+      class: loadbalancer
     count: "1"
     wait: true
   register: ec2_loadbalancer
@@ -70,7 +73,11 @@
     type: "{{ ec2_instance_type }}"
     image: "{{ ec2_image }}"
     region: "{{ ec2_region }}"
-    instance_tags: "{'Name':'dev-webserver', 'env':'{{ ec2_environment }}', 'class':'webserver'}"
+    instance_tags:
+    # Ternary to define Name tag
+      Name: "{{ ( ec2_environment == 'development') | ternary('dev-webserver', ec2_environment[0:4] + '-webserver') }}"
+      env: "{{ ec2_environment }}"
+      class: webserver
     count: 2
   register: ec2_webserver
 
