@@ -1,22 +1,30 @@
-# ansible-boilerplate
+# Ansible AWS haproxy Load Balancer
 
-This repo is a boilerplate for getting started for repos containing Ansible
-playbooks. `git clone` this project and be on your merry way.
+## Install Prerequisites
 
-## Prerequisites
-
-### Install ansible
-
-#### pip
-
-- `pip install ansible` (may need to run this as `sudo`)
+- `sudo apt-get install software-properties-common`
+- `sudo apt-add-repository ppa:ansible/ansible`
+- `sudo apt-get update`
+- `sudo apt-get install ansible python-boto`
 
 ## Getting started
 
 ### Git clone
 
-- `git clone --depth=1 --branch=master https://github.com/mikechau/ansible-boilerplate.git` - clone the latest copy of the repo
-- `cd ansible-boilerplate && git remote rm origin` - remove the origin
+- `git clone https://github.com/james-mead/ansible_aws_haproxy_apache.git` - clone the latest copy of the repo
+- `cd ansible_aws_haproxy && git remote rm origin` - remove the origin
+
+### Ansible SSH
+
+Ansible by default manages machines over the SSH protocol. Please do the following:
+
+1. Login to your AWS EC2 console and download your keypair file. 
+2. Place the file in ~/.ssh
+3. `cd ~/.ssh && chmod 600 keypair.pem`
+4. `ssh-agent bash`
+5. `ssh-add ~/.ssh/keypair.pem`
+
+To verify your keypair is loaded correctly type: `ssh-add -l`
 
 ---
 
