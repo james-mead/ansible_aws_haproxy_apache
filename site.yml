@@ -26,7 +26,8 @@
 # Configure and deploy the load balancer(s).
 - hosts: "security_group_{{ env }}_load_balancers"
   pre_tasks:
-    - include_vars: "inventories/{{ env }}/group_vars/security_group_{{ env }}_load_balancers"
+    - include_vars: 
+        dir: "inventories/{{ env }}/group_vars/security_group_{{ env }}_load_balancers"
   remote_user: ubuntu
   become: true
   become_method: sudo
