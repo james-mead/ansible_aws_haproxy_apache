@@ -18,11 +18,11 @@
 
 Ansible by default manages machines over the SSH protocol. Please do the following:
 
-1. Login to your AWS EC2 console and download your keypair file. 
-2. Place the file in ~/.ssh
-3. `cd ~/.ssh && chmod 600 keypair.pem`
-4. `ssh-agent bash`
-5. `ssh-add ~/.ssh/keypair.pem`
+1. Login to your AWS EC2 console and download the appropriate keypair file in order to manage your EC2 instances 
+2. Copy your keypair file to ~/.ssh
+3. Change the permission of your keypair file: `cd ~/.ssh && chmod 600 keypair.pem`
+4. Set your default ssh agent: `ssh-agent bash`
+5. Add your keypair file to your ssh agent: `ssh-add ~/.ssh/keypair.pem`
 
 To verify your keypair is loaded correctly type: `ssh-add -l`
 
@@ -31,18 +31,27 @@ To verify your keypair is loaded correctly type: `ssh-add -l`
 ### Directory structure
 
 ```
-.
 ├── ansible.cfg
-├── galaxy_roles
 ├── inventories
-│   ├── group_vars
-│   └── host_vars
+│   ├── development
+│   │    ├── group_vars
+│   │    │    ├── all
+│   │    │       ├── secret
+│   │    │          ├── ec2.yml
+│   │    ├── host_vars
+│   │    ├── hosts
+│   ├── staging
+│   │    ├── group_vars
+│   │    ├── host_vars
+│   │    ├── hosts
+│   ├── production
+│   │    ├── group_vars
+│   │    ├── host_vars
+│   │    ├── hosts
 ├── LICENSE
 ├── log -> /tmp/ansible.log
 ├── notes
-├── playbooks
 ├── README.md
-├── requirements.yml
 ├── roles
 └── tmp
 ```
@@ -57,17 +66,6 @@ project.
 
 - [Ansible.cfg - http://docs.ansible.com/ansible/intro_configuration.html](http://docs.ansible.com/ansible/intro_configuration.html)
 
-#### galaxy_roles
-
-This is where you should install your third-party roles from [Ansible Galaxy](https://galaxy.ansible.com/).
-
-Recommended to configure [requirements.yml](requirements.yml) with the third party roles you are
-using.
-
-##### Read more
-
-- [Ansible Galaxy - http://docs.ansible.com/ansible/galaxy.html](http://docs.ansible.com/ansible/galaxy.html)
-
 #### inventories
 
 This is where you should put the list of hosts for Ansible to connect to. It
@@ -79,41 +77,19 @@ Example:
 .
 ├── group_vars
 ├── host_vars
-└── production
+└── hosts
 ```
 
-We have a file called `production`, but if you have a lot of environments,
-instead of `production`, you might call it `production_app_name` or
-`app_name_production`, etc.
-
-In it you might define it like so:
+We have a file called `hosts`. In it you might define it like so:
 
 ```yml
-# inventories/production
+# inventories/hosts
 [application]
 app01.server.com
 app02.server.com
 app03.server.com
 
 [database]
-db01.server.com
-
-[production:children]
-application
-database
-```
-
-`production:children`, indicates to Ansible this is a group of made of all the
-things in the groups listed below.
-
-So its equivalent to manually writing:
-
-```
-# inventories/production
-[production]
-app01.server.com
-app02.server.com
-app03.server.com
 db01.server.com
 ```
 
@@ -142,8 +118,8 @@ Example structure:
 ```
 
 - `all` - is a Ansible group, where it will be loaded for all hosts.
-- `application`-  is a user defined group of hosts, we defined this in our `production` hosts file in the previous example.
-- `database` - is a user defined group of hosts, we defined this in our `production` hosts file in the previous example.
+- `application`-  is a user defined group of hosts, we defined this in our `hosts` file in the previous example.
+- `database` - is a user defined group of hosts, we defined this in our `hosts` file in the previous example.
 
 A group variable file looks like this:
 
@@ -213,28 +189,9 @@ This is where you can add your notes for things like manual configuration.
 
 ---
 
-#### playbooks
-
-This is where [playbooks](http://docs.ansible.com/ansible/playbooks.html)
-should be placed.
-
 ##### Read More
 
 - [Playbooks - http://docs.ansible.com/ansible/playbooks.html](http://docs.ansible.com/ansible/playbooks.html)
-
----
-
-#### requirements.yml
-
-Edit this yml file to add your third-party roles from Github or Ansible Galaxy.
-
-Then install your roles with this command:
-
-```bash
-ansible-galaxy install -r requirements.yml
-```
-
-[Ansible Galaxy - requirements - http://docs.ansible.com/ansible/galaxy.html#advanced-control-over-role-requirements-files](http://docs.ansible.com/ansible/galaxy.html#advanced-control-over-role-requirements-files)
 
 ---
 
