@@ -1,11 +1,13 @@
 ---
-# call with: ansible-playbook --ask-vault-pass playbooks/terminate-ec2-instances.yml -e "env=development"
+# This playbook removes all EC2 instances and security groups for the specified environment using the -e "env=<environement>" options
+# Call playbook with: ansible-playbook --ask-vault-pass terminate-ec2-instances.yml -e "env=development"
  
 - hosts: ec2
   gather_facts: True
   connection: local
   pre_tasks:
-    - include_vars: "inventories/{{ env }}/group_vars/all"
+    - include_vars: 
+        dir: "inventories/{{ env }}/group_vars/all"
   tasks:
     - name: Gather EC2 facts
       local_action: ec2_facts
@@ -27,9 +29,10 @@
 - hosts: localhost
   connection: local
   pre_tasks:
-    - include_vars: "inventories/{{ env }}/group_vars/all"
+    - include_vars: 
+        dir: "inventories/{{ env }}/group_vars/all"
   tasks:
-    - name: Gather EC2 Group Facts
+    - name: Gather Security Group Facts
       local_action: ec2_facts
       
     - name: Remove Web Server Security Group

@@ -1,8 +1,12 @@
 ---
+# This playbook provisions all EC2 instances and security groups for the specified environment using the -e "env=<environement>" options flag
+# Call playbook with: ansible-playbook --ask-vault-pass provision-ec2-instances.yml -e "env=development"
+
 - hosts: localhost
   connection: local
   gather_facts: false
   pre_tasks:
-    - include_vars: "inventories/{{ env}}/group_vars/all"
+    - include_vars: 
+        dir: "inventories/{{ env }}/group_vars/all"
   roles:
     - provision-ec2
